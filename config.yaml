@@ -1,0 +1,10 @@
+---
+user:
+  username: steamuser
+  password: password
+steam_cmd:  /usr/games/steam
+folders:
+  base_path:        /home/arma3server/
+  mod_directory:    serverfiles/mods/
+  config_directory: lgsm/config-lgsm/arma3server/arma3server.cfg
+  mod_config_folder:    mod_configs
