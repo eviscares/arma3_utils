@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import errno
 import re
 import yaml
 from argparse import ArgumentParser
@@ -181,7 +182,14 @@ def main():
         print('generate_preset(generate_modlist())')
     if args.command=='activate_config':
         config_to_activate = CONFIG_PATH + args.name
-        os.symlink(config_to_activate, CONFIG_PATH)
+        try:
+            os.symlink(config_to_activate, CONFIG_PATH)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                os.remove(CONFIG_PATH)
+                os.symlink(config_to_activate, CONFIG_PATH)
+
+        
         if args.restart:
             print('Restarting server')
             #restart the server
