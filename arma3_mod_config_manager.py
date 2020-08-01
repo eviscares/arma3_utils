@@ -12,7 +12,7 @@ with open('config.yaml') as file:
 
 BASE_PATH = config['folders']['base_path']
 MOD_DIRECTORY = BASE_PATH + config['folders']['mod_directory']
-CONFIG_PATH = BASE_PATH + config['folders']['config_directory']
+CONFIG_PATH = BASE_PATH + config['folders']['config_file']
 MOD_CONFIG_FOLDER = BASE_PATH + config['folders']['mod_config_folder']
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
 
@@ -146,17 +146,6 @@ def generate_preset(mod_list):
              '<div class="mod-list">\n'
              '<table>\n'
              ).format("Modpack", mod_list['title']))
-    f.write(('</style>\n'
-             '</head>\n'
-             '<body>\n'
-             '<h1>Arma 3  - {} <strong>{}</strong></h1>\n'
-             '<p class="before-list">\n'
-             '<em>Drag this file or link to it to Arma 3 Launcher or open it Mods / Preset / Import.</em>\n'
-             '</p>\n'
-             '<h2 class="list-heading">Required Mods</h2>'
-             '<div class="mod-list">\n'
-             '<table>\n'
-             ).format("Modpack", mod_list['title']))
 
     for mod_name, mod_id in mod_list.items():
         if mod_id not in mod_list['title']:
@@ -191,8 +180,8 @@ def main():
     if args.command=='generate_modlist':
         print('generate_preset(generate_modlist())')
     if args.command=='activate_config':
-        print('Activating {}.'.format(args.command, args.name))
-        #create symlink
+        config_to_activate = CONFIG_PATH + args.name
+        os.symlink(config_to_activate, CONFIG_PATH)
         if args.restart:
             print('Restarting server')
             #restart the server
