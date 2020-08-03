@@ -4,6 +4,7 @@ import os
 import errno
 import re
 import yaml
+import psutil
 from argparse import ArgumentParser
 from urllib import request
 
@@ -11,10 +12,15 @@ from urllib import request
 with open('config.yaml') as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
 
-BASE_PATH = config['folders']['base_path']
-MOD_DIRECTORY = BASE_PATH + config['folders']['mod_directory']
-CONFIG_PATH = BASE_PATH + config['folders']['config_file']
-MOD_CONFIG_FOLDER = BASE_PATH + config['folders']['mod_config_folder']
+# Neccessary paths that we need to establish
+BASE_PATH = config['paths']['base_path']
+MOD_DIRECTORY = BASE_PATH + config['paths']['mod_directory']
+CONFIG_PATH = BASE_PATH + config['paths']['config_file']
+MOD_CONFIG_FOLDER = BASE_PATH + config['paths']['mod_config_folder']
+LOG_PATH = BASE_PATH + config['paths']['log_path']
+LGSM_BINARY = BASE_PATH + config['lgsm_binary']
+
+# Regex Patterns
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
 
 def parse_args():
@@ -176,23 +182,35 @@ def generate_preset(mod_list):
             '</html>\n'
             )
 
+
+def activate_config(config_name):
+    config_to_activate = MOD_CONFIG_FOLDER + config_name
+    try:
+        os.symlink(config_to_activate, CONFIG_PATH)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            os.remove(CONFIG_PATH)
+            os.symlink(config_to_activate, CONFIG_PATH)
+
+
+def restart_server():
+    print('Restarting server')
+    # restart the server
+    pass
+
+
 def main():
     args = parse_args()
     if args.command=='generate_modlist':
         print('generate_preset(generate_modlist())')
     if args.command=='activate_config':
-        config_to_activate = CONFIG_PATH + args.name
-        try:
-            os.symlink(config_to_activate, CONFIG_PATH)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                os.remove(CONFIG_PATH)
-                os.symlink(config_to_activate, CONFIG_PATH)
+        activate_config(args.name)
+    if args.restart:
+        if LGSM_BINARY != '':
+            restart_server()
+        else:
+            print('Sorry, no lgsm binary found, can not automatically restart.')
 
-        
-        if args.restart:
-            print('Restarting server')
-            #restart the server
 
 if __name__ == '__main__':
     main()

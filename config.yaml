@@ -3,8 +3,11 @@ user:
   username: steamuser
   password: password
 steam_cmd:  /usr/games/steam
-folders:
+paths:
   base_path:        /home/arma3server/
   mod_directory:    serverfiles/mods/
   config_file: lgsm/config-lgsm/arma3server/arma3server.cfg
   mod_config_folder:    mod_configs
+  log_path: log/console/arma3server-console.log
+lgsm_binary: arma3server
+
