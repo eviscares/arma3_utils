@@ -22,6 +22,8 @@ LGSM_BINARY = BASE_PATH + config['lgsm_binary']
 
 # Regex Patterns
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
+LOGIN_PATTERN = re.compile(r'^\s\d+\:\d+\:\d+\s(Player)\s.*(connecting)\.$')
+LOGOUT_PATTERN = re.compile(r'^\s\d+\:\d+\:\d+\s(Player)\s.*\s(disconnected)\.$')
 
 def parse_args():
     parser = ArgumentParser()
@@ -35,6 +37,8 @@ def parse_args():
     subparser = subparsers.add_parser('activate_config')
     subparser.add_argument('--name', help='Name of the Config file to activate', required=True)
     subparser.add_argument('--restart', help='Restart the arma3 server after config file was activated',
+                           action='store_true')
+    subparser.add_argument('--force', help='Restart the server even if players are on it.',
                            action='store_true')
     return parser.parse_args()
 
@@ -192,11 +196,42 @@ def activate_config(config_name):
             os.remove(CONFIG_PATH)
             os.symlink(config_to_activate, CONFIG_PATH)
 
+def check_running(process_name):
+    for proc in psutil.process_iter():
+        try:
+            if process_name.lower() in proc.name().lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
 
-def restart_server():
-    print('Restarting server')
-    # restart the server
-    pass
+def check_empty():
+    player_list = []
+    with open(LOG_PATH) as f:
+        for line in f:
+            if LOGIN_PATTERN.match(line):
+                player_list.append(line.split()[2])
+            if LOGOUT_PATTERN.match(line):
+                if line.split()[2] in player_list:
+                    player_list.remove(line.split()[2])
+    if len(player_list) == 0:
+        return True
+    else:
+        return False
+
+def restart_server(args):
+    if config['lgsm_binary'] != '' and os.path.isfile(LGSM_BINARY):
+        if check_running(LGSM_BINARY):
+            print("{} is running. Parsing logs to see if it is empty.".format(LGSM_BINARY))
+            if check_empty() or args.force:
+                print('restarting_server')
+            else:
+                print('Server not empty and --force not supplied.')
+        else:
+            print('Server not running.')
+    else:
+        print('No lgsm binary configured, or binary not found. \
+             Can not automatically restart.')
 
 
 def main():
@@ -206,11 +241,7 @@ def main():
     if args.command=='activate_config':
         activate_config(args.name)
     if args.restart:
-        if LGSM_BINARY != '':
-            restart_server()
-        else:
-            print('Sorry, no lgsm binary found, can not automatically restart.')
-
-
+        restart_server(args)
+       
 if __name__ == '__main__':
     main()
