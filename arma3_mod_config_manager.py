@@ -221,7 +221,7 @@ def check_empty():
 
 def restart_server(args):
     if config['lgsm_binary'] != '' and os.path.isfile(LGSM_BINARY):
-        if check_running(LGSM_BINARY):
+        if check_running(config['lgsm_binary']):
             print("{} is running. Parsing logs to see if it is empty.".format(LGSM_BINARY))
             if check_empty() or args.force:
                 print('restarting_server')
