@@ -6,8 +6,11 @@ steam_cmd:  /usr/games/steam
 paths:
   base_path:        /home/arma3server/
   mod_directory:    serverfiles/mods/
+  key_directory:    serverfiles/keys/
   config_file: lgsm/config-lgsm/arma3server/arma3server.cfg
   mod_config_folder:    mod_configs
   log_path: log/console/arma3server-console.log
+  workshop_dir: /home/arma3server/.local/share/Steam/steamapps/workshop/content/
 lgsm_binary: arma3server
-
+arma3_workshop_id: 107410
+steam_changelog_url: https://steamcommunity.com/sharedfiles/filedetails/changelog
