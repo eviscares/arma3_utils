@@ -5,6 +5,7 @@ import errno
 import re
 import yaml
 import psutil
+import shutil
 import time
 from argparse import ArgumentParser
 from datetime import datetime
@@ -61,10 +62,10 @@ def parse_args():
                            action='store_true')
     subparser.add_argument('--force', help='Restart the server even if players are on it.',
                            action='store_true')
-    return parser.parse_args()
-
     # Update Mods
     subparser = subparsers.add_parser('update_mods')
+
+    return parser.parse_args()
 
 def call_steamcmd(params):
     os.system("{} {}".format(STEAM_CMD, params))
@@ -369,7 +370,7 @@ def main():
         print('generate_preset(generate_modlist())')
     if args.command=='activate_config':
         activate_config(args.name)
-    if args.update_mods:
+    if args.command=='update_mods':
         update_mods()
         lowercase_workshop_dir()
         create_mod_symlinks()
