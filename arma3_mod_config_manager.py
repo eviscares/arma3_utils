@@ -5,6 +5,7 @@ import errno
 import re
 import yaml
 import psutil
+import time
 from argparse import ArgumentParser
 from datetime import datetime
 from urllib import request
@@ -34,10 +35,15 @@ ARMA3_WORKSHOP_DIRECTORY = config['paths']['workshop_dir'] + str(config['arma3_w
 
 LOG_PATH = BASE_PATH + config['paths']['log_path']
 
+STEAM_CHANGELOG_URL = config['steam_changelog_url']
+
+STEAM_CMD = config['steam_cmd']
+
 # Regex Patterns
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
 LOGIN_PATTERN = re.compile(r'^\s\d+\:\d+\:\d+\s(Player)\s.*(connecting)\.$')
 LOGOUT_PATTERN = re.compile(r'^\s\d+\:\d+\:\d+\s(Player)\s.*\s(disconnected)\.$')
+UPDATE_PATTERN = re.compile(r"workshopAnnouncement.*?<p id=\"(\d+)\">", re.DOTALL)
 KEY_PATTERN = re.compile(r'(key).*', re.I)
 
 def parse_args():
@@ -66,7 +72,7 @@ def call_steamcmd(params):
 
 def mod_needs_update(mod_id, path):
     if os.path.isdir(path):
-        response = request.urlopen("{}/{}".format(WORKSHOP_CHANGELOG_URL, mod_id)).read()
+        response = request.urlopen("{}/{}".format(STEAM_CHANGELOG_URL, mod_id)).read()
         response = response.decode("utf-8")
         match = UPDATE_PATTERN.search(response)
 
@@ -138,33 +144,32 @@ def copy_keys():
             os.unlink(key_path)
     # Update/add new key symlinks
     for mod_name, mod_id in MODS.items():
-        if mod_name not in SERVER_MODS:
-            real_path = "{}/{}".format(ARMA3_WORKSHOP_DIR, mod_id)
-            if not os.path.isdir(real_path):
-                print("Couldn't copy key for mod '{}', directory doesn't exist.".format(mod_name))
-            else:
-                dirlist = os.listdir(real_path)
-                keyDirs = [x for x in dirlist if re.search(KEY_PATTERN, x)]
+        real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
+        if not os.path.isdir(real_path):
+            print("Couldn't copy key for mod '{}', directory doesn't exist.".format(mod_name))
+        else:
+            dirlist = os.listdir(real_path)
+            keyDirs = [x for x in dirlist if re.search(KEY_PATTERN, x)]
 
-                if keyDirs:
-                    keyDir = keyDirs[0]
-                    if os.path.isfile("{}/{}".format(real_path, keyDir)):
-                        # Key is placed in root directory
-                        key = keyDir
+            if keyDirs:
+                keyDir = keyDirs[0]
+                if os.path.isfile("{}/{}".format(real_path, keyDir)):
+                    # Key is placed in root directory
+                    key = keyDir
+                    key_path = os.path.join(KEY_DIRECTORY, key)
+                    if not os.path.exists(key_path):
+                        print("Creating symlink to key for mod '{}' ({})".format(mod_name, key))
+                        os.symlink(os.path.join(real_path, key), key_path)
+                else:
+                    # Key is in a folder
+                    for key in os.listdir(os.path.join(real_path, keyDir)):
+                        real_key_path = os.path.join(real_path, keyDir, key)
                         key_path = os.path.join(KEY_DIRECTORY, key)
                         if not os.path.exists(key_path):
                             print("Creating symlink to key for mod '{}' ({})".format(mod_name, key))
-                            os.symlink(os.path.join(real_path, key), key_path)
-                    else:
-                        # Key is in a folder
-                        for key in os.listdir(os.path.join(real_path, keyDir)):
-                            real_key_path = os.path.join(real_path, keyDir, key)
-                            key_path = os.path.join(KEY_DIRECTORY, key)
-                            if not os.path.exists(key_path):
-                                print("Creating symlink to key for mod '{}' ({})".format(mod_name, key))
-                                os.symlink(real_key_path, key_path)
-                else:
-                    print("!! Couldn't find key folder for mod {} !!".format(mod_name))
+                            os.symlink(real_key_path, key_path)
+            else:
+                print("!! Couldn't find key folder for mod {} !!".format(mod_name))
 
 def generate_modlist():
     prev_line = ''
