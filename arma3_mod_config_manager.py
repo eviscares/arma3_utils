@@ -30,7 +30,7 @@ MOD_CONFIG_FOLDER = BASE_PATH + config['paths']['mod_config_folder']
 
 LGSM_BINARY = BASE_PATH + config['lgsm_binary']
 
-ARMA3_WORKSHOP_DIRECTORY = config['paths']['workshop_dir'] + config['arma3_workshop_id']
+ARMA3_WORKSHOP_DIRECTORY = config['paths']['workshop_dir'] + str(config['arma3_workshop_id'])
 
 LOG_PATH = BASE_PATH + config['paths']['log_path']
 
