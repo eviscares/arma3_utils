@@ -7,6 +7,7 @@ import yaml
 import psutil
 import shutil
 import time
+import subprocess
 from argparse import ArgumentParser
 from datetime import datetime
 from urllib import request
@@ -190,7 +191,6 @@ def generate_modlist():
     for mod in mod_line:
         mod_list[mod] = os.readlink('{}{}'.format(MOD_DIRECTORY, mod)).split('/')[-1]
     return mod_list
-            
 
 def generate_preset(mod_list):
     if 'title' in mod_list:
@@ -316,7 +316,6 @@ def generate_preset(mod_list):
             '</html>\n'
             )
 
-
 def activate_config(config_name):
     config_to_activate = MOD_CONFIG_FOLDER + config_name
     try:
@@ -354,7 +353,7 @@ def restart_server(args):
         if check_running(config['lgsm_binary']):
             print("{} is running. Parsing logs to see if it is empty.".format(LGSM_BINARY))
             if check_empty() or args.force:
-                print('restarting_server')
+                subprocess.run([LGSM_BINARY, 'restart'])
             else:
                 print('Server not empty and --force not supplied.')
         else:
@@ -369,14 +368,24 @@ def main():
     if args.command=='generate_modlist':
         print('generate_preset(generate_modlist())')
     if args.command=='activate_config':
+        print('Activating config {}'.format(args.name))
         activate_config(args.name)
     if args.command=='update_mods':
+        print('Checking for updates...')
         update_mods()
+        print('Converting to lowercase...')
         lowercase_workshop_dir()
+        print('Creating symlinks for mod folders...')
         create_mod_symlinks()
+        print('Creating symlinks for keys...')
         copy_keys()
-    if args.restart:
-        restart_server(args)
+    try:
+        if args.restart:
+            print('Restarting server...')
+            restart_server(args)
+    except AttributeError:
+        pass
+
 
        
 if __name__ == '__main__':

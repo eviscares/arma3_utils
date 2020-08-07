@@ -8,7 +8,7 @@ paths:
   mod_directory:    serverfiles/mods/
   key_directory:    serverfiles/keys/
   config_file: lgsm/config-lgsm/arma3server/arma3server.cfg
-  mod_config_folder:    mod_configs
+  mod_config_folder:    mod_configs/
   log_path: log/console/arma3server-console.log
   workshop_dir: /home/arma3server/.local/share/Steam/steamapps/workshop/content/
 lgsm_binary: arma3server
