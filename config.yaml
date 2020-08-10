@@ -11,6 +11,8 @@ paths:
   mod_config_folder:    mod_configs/
   log_path: log/console/arma3server-console.log
   workshop_dir: /home/arma3server/.local/share/Steam/steamapps/workshop/content/
+  modlist_dir: modlists/
+  web_root: /var/www/html/modlist/
 lgsm_binary: arma3server
 arma3_workshop_id: 107410
 steam_changelog_url: https://steamcommunity.com/sharedfiles/filedetails/changelog

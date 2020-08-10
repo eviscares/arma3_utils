@@ -28,6 +28,7 @@ BASE_PATH = config['paths']['base_path']
 MOD_DIRECTORY = BASE_PATH + config['paths']['mod_directory']
 KEY_DIRECTORY = BASE_PATH + config['paths']['key_directory']
 CONFIG_PATH = BASE_PATH + config['paths']['config_file']
+MODLIST_DIR = BASE_PATH + config['paths']['modlist_dir']
 
 MOD_CONFIG_FOLDER = BASE_PATH + config['paths']['mod_config_folder']
 
@@ -40,6 +41,9 @@ LOG_PATH = BASE_PATH + config['paths']['log_path']
 STEAM_CHANGELOG_URL = config['steam_changelog_url']
 
 STEAM_CMD = config['steam_cmd']
+
+#This is only for serving your modlist via webserver
+WEB_ROOT =config['paths']['web_root']
 
 # Regex Patterns
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
@@ -127,7 +131,7 @@ def lowercase_workshop_dir():
 
 def create_mod_symlinks():
     for mod_name, mod_id in MODS.items():
-        link_path = "{}/{}".format(MOD_DIRECTORY, mod_name)
+        link_path = "{}{}".format(MOD_DIRECTORY, mod_name)
         real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
 
         if os.path.isdir(real_path):
@@ -197,124 +201,127 @@ def generate_preset(mod_list):
         modlist_filename = '{}.html'.format(mod_list['title'].replace(' ', '_').lower())
     else:
         modlist_filename = 'modlist.html'
-    modlist_path = BASE_PATH + modlist_filename
-    f = open(modlist_path, "w+")
-    f.write(('<?xml version="1.0" encoding="utf-8"?>\n'
-             '<html>\n\n'
-             '<!--Created using modlist_generator.py by eviscares, based on the work of marceldev89 and Freddo3000.-->\n'
-             '<head>\n'
-             '<meta name="arma:Type" content="{}" />\n'
-             '<meta name="arma:PresetName" content="{}" />\n'
-             '<meta name="generator" content="modlist_generator.py"/>\n'
-             ' <title>Arma 3</title>\n'
-             '<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />\n'
-             '<style>\n'
-             'body {{\n'
-             'margin: 0;\n'
-             'padding: 0;\n'
-             'color: #fff;\n'
-             'background: #000;\n'
-             '}}\n'
-             'body, th, td {{\n'
-             'font: 95%/1.3 Roboto, Segoe UI, Tahoma, Arial, Helvetica, sans-serif;\n'
-             '}}\n'
-             'td {{\n'
-             'padding: 3px 30px 3px 0;\n'
-             '}}\n'
-             'h1 {{\n'
-             'padding: 20px 20px 0 20px;\n'
-             'color: white;\n'
-             'font-weight: 200;\n'
-             'font-family: segoe ui;\n'
-             'font-size: 3em;\n'
-             'margin: 0;\n'
-             '}}\n'
-             'h2 {{'
-             'color: white;'
-             'padding: 20px 20px 0 20px;'
-             'margin: 0;'
-             '}}'
-             'em {{\n'
-             'font-variant: italic;\n'
-             'color:silver;\n'
-             '}}\n'
-             '.before-list {{\n'
-             'padding: 5px 20px 10px 20px;\n'
-             '}}\n'
-             '.mod-list {{\n'
-             'background: #282828;\n'
-             'padding: 20px;\n'
-             '}}\n'
-             '.optional-list {{\n'
-             'background: #222222;\n'
-             'padding: 20px;\n'
-             '}}\n'
-             '.dlc-list {{\n'
-             'background: #222222;\n'
-             'padding: 20px;\n'
-             '}}\n'
-             '.footer {{\n'
-             'padding: 20px;\n'
-             'color:gray;\n'
-             '}}\n'
-             '.whups {{\n'
-             'color:gray;\n'
-             '}}\n'
-             'a {{\n'
-             'color: #D18F21;\n'
-             'text-decoration: underline;\n'
-             '}}\n'
-             'a:hover {{\n'
-             'color:#F1AF41;\n'
-             'text-decoration: none;\n'
-             '}}\n'
-             '.from-steam {{\n'
-             'color: #449EBD;\n'
-             '}}\n'
-             '.from-local {{\n'
-             'color: gray;\n'
-             '}}\n'
-             ).format("Modpack", mod_list['title']))
+    modlist_path = MODLIST_DIR + modlist_filename
+    try:
+        f = open(modlist_path, "w+")
+        f.write(('<?xml version="1.0" encoding="utf-8"?>\n'
+                 '<html>\n\n'
+                 '<!--Created using arma3_utils by eviscares, based on the work of marceldev89 and Freddo3000.-->\n'
+                 '<head>\n'
+                 '<meta name="arma:Type" content="{}" />\n'
+                 '<meta name="arma:PresetName" content="{}" />\n'
+                 '<meta name="generator" content="arma3_utils"/>\n'
+                 ' <title>Arma 3</title>\n'
+                 '<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />\n'
+                 '<style>\n'
+                 'body {{\n'
+                 'margin: 0;\n'
+                 'padding: 0;\n'
+                 'color: #fff;\n'
+                 'background: #000;\n'
+                 '}}\n'
+                 'body, th, td {{\n'
+                 'font: 95%/1.3 Roboto, Segoe UI, Tahoma, Arial, Helvetica, sans-serif;\n'
+                 '}}\n'
+                 'td {{\n'
+                 'padding: 3px 30px 3px 0;\n'
+                 '}}\n'
+                 'h1 {{\n'
+                 'padding: 20px 20px 0 20px;\n'
+                 'color: white;\n'
+                 'font-weight: 200;\n'
+                 'font-family: segoe ui;\n'
+                 'font-size: 3em;\n'
+                 'margin: 0;\n'
+                 '}}\n'
+                 'h2 {{'
+                 'color: white;'
+                 'padding: 20px 20px 0 20px;'
+                 'margin: 0;'
+                 '}}'
+                 'em {{\n'
+                 'font-variant: italic;\n'
+                 'color:silver;\n'
+                 '}}\n'
+                 '.before-list {{\n'
+                 'padding: 5px 20px 10px 20px;\n'
+                 '}}\n'
+                 '.mod-list {{\n'
+                 'background: #282828;\n'
+                 'padding: 20px;\n'
+                 '}}\n'
+                 '.optional-list {{\n'
+                 'background: #222222;\n'
+                 'padding: 20px;\n'
+                 '}}\n'
+                 '.dlc-list {{\n'
+                 'background: #222222;\n'
+                 'padding: 20px;\n'
+                 '}}\n'
+                 '.footer {{\n'
+                 'padding: 20px;\n'
+                 'color:gray;\n'
+                 '}}\n'
+                 '.whups {{\n'
+                 'color:gray;\n'
+                 '}}\n'
+                 'a {{\n'
+                 'color: #D18F21;\n'
+                 'text-decoration: underline;\n'
+                 '}}\n'
+                 'a:hover {{\n'
+                 'color:#F1AF41;\n'
+                 'text-decoration: none;\n'
+                 '}}\n'
+                 '.from-steam {{\n'
+                 'color: #449EBD;\n'
+                 '}}\n'
+                 '.from-local {{\n'
+                 'color: gray;\n'
+                 '}}\n'
+                 ).format("Modpack", mod_list['title']))
 
-    f.write(('</style>\n'
-             '</head>\n'
-             '<body>\n'
-             '<h1>Arma 3  - {} <strong>{}</strong></h1>\n'
-             '<p class="before-list">\n'
-             '<em>Drag this file or link to it to Arma 3 Launcher or open it Mods / Preset / Import.</em>\n'
-             '</p>\n'
-             '<h2 class="list-heading">Required Mods</h2>'
-             '<div class="mod-list">\n'
-             '<table>\n'
-             ).format("Modpack", mod_list['title']))
+        f.write(('</style>\n'
+                 '</head>\n'
+                 '<body>\n'
+                 '<h1>Arma 3  - {} <strong>{}</strong></h1>\n'
+                 '<p class="before-list">\n'
+                 '<em>Drag this file or link to it to Arma 3 Launcher or open it Mods / Preset / Import.</em>\n'
+                 '</p>\n'
+                 '<h2 class="list-heading">Required Mods</h2>'
+                 '<div class="mod-list">\n'
+                 '<table>\n'
+                 ).format("Modpack", mod_list['title']))
 
-    for mod_name, mod_id in mod_list.items():
-        if mod_id not in mod_list['title']:
-            mod_url = "http://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mod_id)
-            response = request.urlopen(mod_url).read()
-            response = response.decode("utf-8")
-            match = TITLE_PATTERN.search(response)
-            if match:
-                mod_title = match.group(1)
-                f.write(('<tr data-type="ModContainer">\n'
-                            '<td data-type="DisplayName">{}</td>\n'
-                            '<td>\n'
-                            '<span class="from-steam">Steam</span>\n'
-                            '</td>\n'
-                            '<td>\n'
-                            '<a href="{}" data-type="Link">{}</a>\n'
-                            '</td>\n'
-                            '</tr>\n'
-                            ).format(mod_title, mod_url, mod_url))
+        for mod_name, mod_id in mod_list.items():
+            if mod_id not in mod_list['title']:
+                mod_url = "http://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mod_id)
+                response = request.urlopen(mod_url).read()
+                response = response.decode("utf-8")
+                match = TITLE_PATTERN.search(response)
+                if match:
+                    mod_title = match.group(1)
+                    f.write(('<tr data-type="ModContainer">\n'
+                                '<td data-type="DisplayName">{}</td>\n'
+                                '<td>\n'
+                                '<span class="from-steam">Steam</span>\n'
+                                '</td>\n'
+                                '<td>\n'
+                                '<a href="{}" data-type="Link">{}</a>\n'
+                                '</td>\n'
+                                '</tr>\n'
+                                ).format(mod_title, mod_url, mod_url))
 
-    f.write('</table>\n'
-            '</div>\n'
-            '<div class="footer">\n'
-            '<span>Created using modlist_generator.py by eviscares, based on the work of marceldev89 and Freddo3000.</span>\n'
-            '</div>\n'
-            '</body>\n'
-            '</html>\n'
-            )
+        f.write('</table>\n'
+                '</div>\n'
+                '<div class="footer">\n'
+                '<span>Created using arma3_utils by eviscares, based on the work of marceldev89 and Freddo3000.</span>\n'
+                '</div>\n'
+                '</body>\n'
+                '</html>\n'
+                )
+    except (OSError, IOError):
+        print('Problem writing to {}'.format(modlist_path))
 
 def activate_config(config_name):
     config_to_activate = MOD_CONFIG_FOLDER + config_name
@@ -324,6 +331,14 @@ def activate_config(config_name):
         if e.errno == errno.EEXIST:
             os.remove(CONFIG_PATH)
             os.symlink(config_to_activate, CONFIG_PATH)
+    generate_preset(generate_modlist())
+    modlist = MODLIST_DIR + config_name.replace('cfg', 'html')
+    if os.path.isdir(WEB_ROOT) and os.path.isfile(modlist):
+        print('Linking {} to {}'.format(modlist, WEB_ROOT + 'modlist.html' ))
+        try:
+            os.symlink(modlist, WEB_ROOT)
+        except PermissionError:
+            print('Can not link, check your permissions.')
 
 def check_running(process_name):
     for proc in psutil.process_iter():
@@ -366,7 +381,7 @@ def restart_server(args):
 def main():
     args = parse_args()
     if args.command=='generate_modlist':
-        print('generate_preset(generate_modlist())')
+        generate_preset(generate_modlist())
     if args.command=='activate_config':
         print('Activating config {}'.format(args.name))
         activate_config(args.name)
