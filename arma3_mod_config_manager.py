@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 
 import os
-import errno
 import re
-import yaml
 import psutil
 import shutil
 import time
@@ -11,14 +9,15 @@ import subprocess
 from argparse import ArgumentParser
 from datetime import datetime
 from urllib import request
+import json
 
 # Load Config from yaml file to make it more user friendly
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=yaml.FullLoader)
+with open('config.json') as file:
+    config = json.load(file)
 
 # Load the list of mods
-with open('mods.yaml') as file:
-    MODS = yaml.load(file, Loader=yaml.FullLoader)
+with open('mods.json') as file:
+    MODS = json.load(file)
 
 # Neccessary variables that we need to establish
 STEAM_USER = config['user']['username']
@@ -90,7 +89,7 @@ def mod_needs_update(mod_id, path):
 
     return False
 
-
+# TODO: Pull this apart, so that the frontend handles which mods get updated, and the backend just updates
 def update_mods():
     for mod_name, mod_id in MODS.items():
         path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
