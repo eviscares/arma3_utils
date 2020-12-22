@@ -11,14 +11,18 @@ import subprocess
 from argparse import ArgumentParser
 from datetime import datetime
 from urllib import request
+import sqlite3
 
 # Load Config from yaml file to make it more user friendly
 with open('config.yaml') as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
 
-# Load the list of mods
-with open('mods.yaml') as file:
-    MODS = yaml.load(file, Loader=yaml.FullLoader)
+
+# Load the list of mods from sqlite
+conn = sqlite3.connect('arma3_utils.db')
+c = conn.cursor()
+c.execute('select rowid, steam_id from mods;')
+MODS = c.execute('select rowid, steam_id from mods;').fetchall()
 
 # Neccessary variables that we need to establish
 STEAM_USER = config['user']['username']
@@ -92,7 +96,8 @@ def mod_needs_update(mod_id, path):
 
 
 def update_mods():
-    for mod_name, mod_id in MODS.items():
+    for mod_name, mod_id in MODS:
+        # TODO: replace me to pull path out of sqlite
         path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
 
         # Check if mod needs to be updated
@@ -130,6 +135,7 @@ def lowercase_workshop_dir():
 
 
 def create_mod_symlinks():
+    #TODO: SQLite
     for mod_name, mod_id in MODS.items():
         link_path = "{}{}".format(MOD_DIRECTORY, mod_name)
         real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
@@ -149,6 +155,7 @@ def copy_keys():
             print("Removing outdated server key '{}'".format(key))
             os.unlink(key_path)
     # Update/add new key symlinks
+    # TODO: Take paths out of SQLite
     for mod_name, mod_id in MODS.items():
         real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
         if not os.path.isdir(real_path):
