@@ -135,8 +135,7 @@ def lowercase_workshop_dir():
 
 
 def create_mod_symlinks():
-    #TODO: SQLite
-    for mod_name, mod_id in MODS.items():
+    for mod_name, mod_id in MODS:
         link_path = "{}{}".format(MOD_DIRECTORY, mod_name)
         real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
 
@@ -156,7 +155,7 @@ def copy_keys():
             os.unlink(key_path)
     # Update/add new key symlinks
     # TODO: Take paths out of SQLite
-    for mod_name, mod_id in MODS.items():
+    for mod_name, mod_id in MODS:
         real_path = "{}/{}".format(ARMA3_WORKSHOP_DIRECTORY, mod_id)
         if not os.path.isdir(real_path):
             print("Couldn't copy key for mod '{}', directory doesn't exist.".format(mod_name))
@@ -209,6 +208,8 @@ def generate_preset(mod_list):
     else:
         modlist_filename = 'modlist.html'
     modlist_path = MODLIST_DIR + modlist_filename
+    if os.path.isfile(modlist_path):
+        os.remove(modlist_path)
     try:
         f = open(modlist_path, "w+")
         f.write(('<?xml version="1.0" encoding="utf-8"?>\n'
@@ -334,13 +335,15 @@ def activate_config(config_name):
     config_to_activate = MOD_CONFIG_FOLDER + config_name
     try:
         os.symlink(config_to_activate, CONFIG_PATH)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            os.remove(CONFIG_PATH)
-            os.symlink(config_to_activate, CONFIG_PATH)
+    except FileExistsError:
+        os.remove(CONFIG_PATH)
+        os.symlink(config_to_activate, CONFIG_PATH)
     generate_preset(generate_modlist())
     modlist = MODLIST_DIR + config_name.replace('cfg', 'html')
     if os.path.isdir(WEB_ROOT) and os.path.isfile(modlist):
+        if os.path.islink(WEB_ROOT + 'modlist.html') and not os.path.exists(WEB_ROOT + 'modlist.html'):
+            print('Removing old modlist.')
+            os.unlink(WEB_ROOT + 'modlist.html')
         print('Linking {} to {}'.format(modlist, WEB_ROOT + 'modlist.html' ))
         try:
             os.symlink(modlist, WEB_ROOT)
